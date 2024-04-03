@@ -1,5 +1,6 @@
 package br.edu.satc.todolistbase
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -31,23 +32,10 @@ class MainActivity : AppCompatActivity() {
         // Pega a referência de nosso botão FloatActionButton e seu click
         findViewById<FloatingActionButton>(R.id.fab).setOnClickListener {
 
-            // Inclusao fake. Add um item na lista
-            // cria o item
-            val item = ToDoItem(
-                null,
-                "Titulo",
-                "Item de teste ${toDoItemList.size + 1}",
-                false
-            )
+            startActivity(Intent(this, NewEditActivity:: class.java))
 
-            // add o item na lista
-            toDoItemList.add(item)
 
-            // informa o adapter que houve uma atualizacao na lista para ele refletir isso em tela
-            toDoItemAdapter.notifyItemChanged(toDoItemList.size-1)
 
-            // Salva no banco de dados
-            db.toDoItemDao().insertAll(item)
         }
     }
 
@@ -99,6 +87,8 @@ class MainActivity : AppCompatActivity() {
 
         val itemOnChecked: (Boolean, ToDoItem) -> Unit = { isChecked, item ->
             Log.d(TAG, "Checked pos: $isChecked | desc: ${item.description}")
+            item.complete = isChecked
+            db.toDoItemDao().updateToDoItems(item)
         }
 
         // Instancia o adapter passando a lista e o método que será disparado no click de item
@@ -110,6 +100,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadData() {
+        toDoItemList.clear()
         toDoItemList.addAll(db.toDoItemDao().getAll() as ArrayList<ToDoItem>)
         toDoItemAdapter.notifyDataSetChanged()
     }
